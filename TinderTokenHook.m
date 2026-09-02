@@ -46,15 +46,20 @@ static NSDictionary* hooked_allHTTPHeaderFields(id self, SEL _cmd) {
         NSError *error;
         
         // Save to /tmp (accessible via Filza)
-        [g_capturedTokens writeToFile:@"/tmp/tinder_tokens.plist" atomically:YES];
+        BOOL saved1 = [g_capturedTokens writeToFile:@"/tmp/tinder_tokens.plist" atomically:YES];
+        NSLog(@"[TinderTokenHook] Save to /tmp/tinder_tokens.plist: %@", saved1 ? @"SUCCESS" : @"FAILED");
+        
+        // Save to /var/tmp as backup
+        BOOL saved2 = [g_capturedTokens writeToFile:@"/var/tmp/tinder_tokens.plist" atomically:YES];
+        NSLog(@"[TinderTokenHook] Save to /var/tmp/tinder_tokens.plist: %@", saved2 ? @"SUCCESS" : @"FAILED");
         
         // Save to Documents directory of Tinder (if accessible)
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         if (paths.count > 0) {
             NSString *documentsPath = paths[0];
             NSString *tinderTokensPath = [documentsPath stringByAppendingPathComponent:@"tinder_tokens.plist"];
-            [g_capturedTokens writeToFile:tinderTokensPath atomically:YES];
-            NSLog(@"[TinderTokenHook] Saved to %@", tinderTokensPath);
+            BOOL saved3 = [g_capturedTokens writeToFile:tinderTokensPath atomically:YES];
+            NSLog(@"[TinderTokenHook] Save to %@: %@", tinderTokensPath, saved3 ? @"SUCCESS" : @"FAILED");
         }
         
         // Also save as plain text for easy reading
@@ -68,10 +73,11 @@ static NSDictionary* hooked_allHTTPHeaderFields(id self, SEL _cmd) {
             }
         }
         
-        // Write plain text to /tmp
+        // Write plain text to multiple locations
         [plainText writeToFile:@"/tmp/tinder_tokens.txt" atomically:YES encoding:NSUTF8StringEncoding error:&error];
+        [plainText writeToFile:@"/var/tmp/tinder_tokens.txt" atomically:YES encoding:NSUTF8StringEncoding error:&error];
         
-        NSLog(@"[TinderTokenHook] Tokens captured and saved");
+        NSLog(@"[TinderTokenHook] Tokens captured and saved. Total tokens: %lu", (unsigned long)g_capturedTokens.count);
     }
     
     return headers;
