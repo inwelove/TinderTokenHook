@@ -102,10 +102,17 @@ static void initialize() {
     
     NSLog(@"[TinderTokenHook] Initializing Tinder Token Hook...");
     
+    // Create marker file to confirm plugin is loaded
+    NSString *markerPath = @"/tmp/tinder_hook_loaded.txt";
+    NSString *markerContent = [NSString stringWithFormat:@"TinderTokenHook loaded at %@", [g_dateFormatter stringFromDate:[NSDate date]]];
+    [markerContent writeToFile:markerPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+    NSLog(@"[TinderTokenHook] Created marker file: %@", markerPath);
+    
     // Get the class
     Class NSURLRequestClass = objc_getClass("NSURLRequest");
     if (!NSURLRequestClass) {
         NSLog(@"[TinderTokenHook] Failed to get NSURLRequest class");
+        [@"FAILED: NSURLRequest class not found" writeToFile:@"/tmp/tinder_hook_error.txt" atomically:YES encoding:NSUTF8StringEncoding error:nil];
         return;
     }
     
@@ -113,6 +120,7 @@ static void initialize() {
     Method originalMethod = class_getInstanceMethod(NSURLRequestClass, @selector(allHTTPHeaderFields));
     if (!originalMethod) {
         NSLog(@"[TinderTokenHook] Failed to get allHTTPHeaderFields method");
+        [@"FAILED: allHTTPHeaderFields method not found" writeToFile:@"/tmp/tinder_hook_error.txt" atomically:YES encoding:NSUTF8StringEncoding error:nil];
         return;
     }
     
@@ -123,6 +131,7 @@ static void initialize() {
     method_setImplementation(originalMethod, (IMP)hooked_allHTTPHeaderFields);
     
     NSLog(@"[TinderTokenHook] Hook installed successfully");
+    [@"SUCCESS: Hook installed" writeToFile:@"/tmp/tinder_hook_status.txt" atomically:YES encoding:NSUTF8StringEncoding error:nil];
     NSLog(@"[TinderTokenHook] Tokens will be saved to:");
     NSLog(@"[TinderTokenHook]   /tmp/tinder_tokens.plist");
     NSLog(@"[TinderTokenHook]   /tmp/tinder_tokens.txt");
