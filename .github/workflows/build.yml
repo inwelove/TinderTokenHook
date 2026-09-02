@@ -1,0 +1,29 @@
+name: Build TinderTokenHook dylib
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Compile dylib
+      run: |
+        clang -dynamiclib -o TinderTokenHook.dylib TinderTokenHook.m -framework Foundation -fobjc-arc
+        echo "Build completed successfully"
+        ls -la TinderTokenHook.dylib
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: TinderTokenHook
+        path: TinderTokenHook.dylib
+        retention-days: 30

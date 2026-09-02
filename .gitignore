@@ -1,0 +1,22 @@
+# Compiled dylib
+*.dylib
+*.o
+
+# Temporary files
+/tmp/
+*.tmp
+*.log
+
+# macOS
+.DS_Store
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+build/
+DerivedData/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
